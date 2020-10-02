@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30114.105
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordSpy", "DiscordSpy\DiscordSpy.csproj", "{4EEA767B-D987-4903-B6F1-549166E47962}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4EEA767B-D987-4903-B6F1-549166E47962}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4EEA767B-D987-4903-B6F1-549166E47962}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4EEA767B-D987-4903-B6F1-549166E47962}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4EEA767B-D987-4903-B6F1-549166E47962}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5B00DED1-7662-4668-A935-E2A672DF73BF}
+	EndGlobalSection
+EndGlobal
