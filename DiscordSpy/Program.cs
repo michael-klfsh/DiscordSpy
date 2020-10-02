@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace DiscordSpy
 {
@@ -6,7 +7,8 @@ namespace DiscordSpy
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            new Bot().MainAsync().GetAwaiter().GetResult();
         }
+
     }
 }
