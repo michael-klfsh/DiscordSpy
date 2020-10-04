@@ -1,4 +1,5 @@
-﻿using Discord.WebSocket;
+﻿using Discord;
+using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,6 +12,9 @@ namespace DiscordSpy
     {
         private DiscordSocketClient client;
         private List<ulong> onlineUsers;
+        string pathS;
+        string pathD;
+        ulong channelID;
 
         /**
          * Creates a new bot instance
@@ -18,6 +22,9 @@ namespace DiscordSpy
         public Bot()
         {
             client = new DiscordSocketClient();
+            pathS = "/home/pi/Desktop/DiscordBot/Statistik/Stats/";
+            pathD = "/home/pi/Desktop/DiscordBot/Statistik/Date/Datum.txt";
+            channelID = 500714761227337751;
         }
 
         public async Task MainAsync()
@@ -44,12 +51,13 @@ namespace DiscordSpy
             client.UserJoined += NewUserJoin;
             client.UserVoiceStateUpdated += UserMoves;
             client.GuildMemberUpdated += ManageRole;
+            client.MessageReceived += RespondOnMessage;
             client.Disconnected += CloseStats;
         }
 
         public async Task NewUserJoin(SocketGuildUser newUser)
         {
-
+            Console.WriteLine($"Der Nutzer {newUser.Nickname} ist dem Server beigetreten.");
         }
 
         public async Task UserMoves(SocketUser user, SocketVoiceState before, SocketVoiceState after)
@@ -70,12 +78,94 @@ namespace DiscordSpy
 
         public async Task ManageRole(SocketGuildUser before, SocketGuildUser after)
         {
-            
+            //outsource into config file
+            double interval = 7.0;
+            ulong roleID = 713433199899967529;
+
+            if (File.Exists(pathD))
+            {
+                /*Check date*/
+                String[] file = File.ReadAllLines(pathD);
+                if (file.Length == 1)
+                {
+                    if (DateTime.Compare(DateTime.Parse(file[0]).AddDays(interval), DateTime.Now) <= 0)
+                    {
+                        using (StreamWriter sw = new StreamWriter(pathD))
+                        {
+                            sw.WriteLine(DateTime.Now);
+                        }
+                        /*Evaluate user with longest time on guild*/
+                        int longestTime = -1;
+                        String maxUserPath = "";
+                        String[] files = Directory.GetFiles(pathS);
+                        foreach (String user in files)
+                        {
+                            String time;
+                            time = File.ReadAllLines(user)[0].Split(" ")[2];       //Stores the total time of the user
+                            if (int.Parse(time) > longestTime)          //unlikely: two have same time -> first win
+                            {
+                                longestTime = int.Parse(time);
+                                maxUserPath = user;
+                            }
+                        }
+                        /*Remove role of old member and add role to new one*/
+                        try
+                        {
+                            var guild = before.Guild;
+                            var winningUser = guild.GetUser(ulong.Parse(maxUserPath.Split("/")[7].Split(".")[0]));
+                            var role = guild.GetRole(roleID);
+                            var oldMembers = role.Members;
+                            foreach (var member in oldMembers)       //Alle mit der VIP Rolle wird diese entzogen
+                            {
+                                Console.WriteLine($"Loesche die VIP Rolle von: {member}");
+                                await member.RemoveRoleAsync(role, RequestOptions.Default);     //TODO: Check if await needed
+                            }
+                            await (winningUser as IGuildUser).AddRoleAsync(role);       //Der neue bekommt die VIP Rolle.
+                            Console.WriteLine($"Der User {winningUser} hat mit {longestTime} Sekunden gewonnen.");
+                            await (client.GetChannel(channelID) as IMessageChannel).SendMessageAsync($"{winningUser} war mit {longestTime / 3600}h am längsten auf dem Server und bekommt für diese Woche die VIP Rolle");
+                            /*Delete all files*/
+                            foreach (String delFile in files)
+                            {
+
+                                File.Delete(delFile);      //Jede Datei wird gelöscht
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine("Es ist ein Fehler aufgetreten und die Dateien sind schon gelöscht worden");
+                        }
+                    }
+                }
+            }
+        }
+
+        public async Task RespondOnMessage(SocketMessage message)
+        {
+            ulong authorID = message.Author.Id;
+            if(message.Author.IsBot)
+            {
+                return;
+            }
+            if(message.Content.ToLower().StartsWith("-spy"))
+            {
+                String[] m = message.Content.Split("/");
+                try
+                {
+                    if(m[1].ToLower().Equals("getstats"))
+                    {
+                        message.Author.SendMessageAsync("");        //TODO: Add stats and date to massage
+                    }
+                }
+                catch(Exception e)
+                {
+
+                }
+            }
         }
 
         public async Task CloseStats(Exception e)
         {
-            var voiceChannels = client.GetGuild(0000).VoiceChannels;    //TODO: Exchange with Guild ID
+            var voiceChannels = client.GetGuild(channelID).VoiceChannels;
             foreach (var channel in voiceChannels)
             {
                 //Vllt ersetzen durch onlineUser List
