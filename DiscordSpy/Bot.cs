@@ -15,6 +15,7 @@ namespace DiscordSpy
         string pathS;
         string pathD;
         ulong channelID;
+        ulong afkChannel;
 
         /**
          * Creates a new bot instance
@@ -66,11 +67,11 @@ namespace DiscordSpy
             {
                 return;
             }
-            if (before.VoiceChannel == null && after.VoiceChannel != null)
+            if (before.VoiceChannel == null && after.VoiceChannel != null && after.VoiceChannel.Id != afkChannel || before.VoiceChannel.Id == afkChannel && after.VoiceChannel != null && after.VoiceChannel.Id != afkChannel)
             {
                 UserJoin(user.Id);
             }
-            else if (before.VoiceChannel != null && after.VoiceChannel == null)
+            else if (before.VoiceChannel != null && after.VoiceChannel == null && before.VoiceChannel.Id != afkChannel || before.VoiceChannel != null && before.VoiceChannel.Id != afkChannel && after.VoiceChannel.Id == afkChannel)
             {
                 UserLeave(user.Id, user.Username);
             }
@@ -96,7 +97,7 @@ namespace DiscordSpy
                         }
                         /*Evaluate user with longest time on guild*/
                         int longestTime = -1;
-                        String maxUserPath = "";
+                        String maxUserPath = "";        //""+pathS + "000";
                         String[] files = Directory.GetFiles(pathS);
                         foreach (String user in files)
                         {
@@ -141,7 +142,6 @@ namespace DiscordSpy
 
         public async Task RespondOnMessage(SocketMessage message)
         {
-            ulong authorID = message.Author.Id;
             if(message.Author.IsBot)
             {
                 return;
@@ -153,7 +153,61 @@ namespace DiscordSpy
                 {
                     if(m[1].ToLower().Equals("getstats"))
                     {
-                        message.Author.SendMessageAsync("");        //TODO: Add stats and date to massage
+                        if(File.Exists(pathS + message.Author.Id + ".txt"))
+                        {
+                            String[] file = File.ReadAllLines(pathS + message.Author.Id + ".txt");
+                            String[] time = file[0].Split(" ");
+                            int endTime = (int)(DateTime.UtcNow.Subtract(new DateTime(2020, 1, 1))).TotalSeconds;
+                            int startTime = int.Parse(time[1]);
+                            if(startTime != 0 && endTime - startTime < 86400)
+                            {
+                                int total = int.Parse(time[2]) + endTime - startTime;
+                                if(File.Exists(pathD))
+                                {
+                                    String[] date = File.ReadAllLines(pathD);
+                                    if(date.Length == 1)
+                                    {
+                                        Console.WriteLine($"{DateTime.Now}: {message.Author.Username} hat seine Serverzeit erfragt.");
+                                        DateTime lastCheck = DateTime.Parse(date[0]);
+                                        await message.Author.SendMessageAsync($"Du warst seid dem {lastCheck.ToShortDateString()} ca. {total / 3600}h auf dem Server.");
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("Die Datumsdatei entspricht nicht dem richtigen Format.");
+                                    }
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Es existiert keine Datumsdatei unter dem angegebenen Pfad.");
+                                }
+                            }
+                            else if(startTime == 0)
+                            {
+                                int total = int.Parse(time[2]);
+                                if(File.Exists(pathD))
+                                {
+                                    String[] date = File.ReadAllLines(pathD);
+                                    if(date.Length == 1)
+                                    {
+                                        Console.WriteLine($"{DateTime.Now}: {message.Author.Username} hat seine Serverzeit erfragt.");
+                                        DateTime lastCheck = DateTime.Parse(date[0]);
+                                        await message.Author.SendMessageAsync($"Du warst seid dem {lastCheck.ToShortDateString()} ca. {total / 3600}h auf dem Server.");
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("Die Datumsdatei entspricht nicht dem richtigen Format.");
+                                    }
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Es existiert keine Datumsdatei unter dem angegebenen Pfad.");
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine("Der User {message.Author.Username} wollte seine Zeit wissen, es ist aber ein Fehler aufgetreten.");
+                            }
+                        }
                     }
                 }
                 catch(Exception e)
