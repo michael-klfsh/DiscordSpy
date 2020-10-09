@@ -23,6 +23,7 @@ namespace DiscordSpy
          */
         public Bot()
         {
+            string temp = ConfigurationManager.AppSettings[""];
             client = new DiscordSocketClient();
             pathS = "/home/pi/Desktop/DiscordBot/Statistik/Stats/";
             pathD = "/home/pi/Desktop/DiscordBot/Statistik/Date/Datum.txt";
