@@ -17,6 +17,8 @@ namespace DiscordSpy
         string pathD;
         ulong channelID;
         ulong afkChannel;
+        ulong roleID;
+        double interval;
 
         /**
          * Creates a new bot instance
@@ -24,9 +26,12 @@ namespace DiscordSpy
         public Bot()
         {
             client = new DiscordSocketClient();
-            pathS = "/home/pi/Desktop/DiscordBot/Statistik/Stats/";
-            pathD = "/home/pi/Desktop/DiscordBot/Statistik/Date/Datum.txt";
-            channelID = 500714761227337751;
+            afkChannel = ulong.Parse(ConfigurationManager.AppSettings["afkChannel"]);
+            roleID = ulong.Parse(ConfigurationManager.AppSettings["role"]);
+            interval = double.Parse(ConfigurationManager.AppSettings["interval"]);
+            pathS = ConfigurationManager.AppSettings["pathS"];
+            pathD = ConfigurationManager.AppSettings["pathD"];
+            channelID = ulong.Parse(ConfigurationManager.AppSettings["channelId"]);
         }
 
         public async Task MainAsync()
@@ -34,7 +39,7 @@ namespace DiscordSpy
             try
             {
                 await Initialize();
-                var token = Environment.GetEnvironmentVariable("DiscordSpyToken");      //TODO: Add discord token to personal environment
+                string token = ConfigurationManager.AppSettings["token"];
                 await client.LoginAsync(Discord.TokenType.Bot, token);
                 await client.StartAsync();
                 await Task.Delay(-1);
@@ -80,10 +85,6 @@ namespace DiscordSpy
 
         public async Task ManageRole(SocketGuildUser before, SocketGuildUser after)
         {
-            //outsource into config file
-            double interval = 7.0;
-            ulong roleID = 713433199899967529;
-
             if (File.Exists(pathD))
             {
                 /*Check date*/
@@ -239,7 +240,7 @@ namespace DiscordSpy
 
         private void UserJoin(ulong uId)
         {
-            string path = "" + uId + ".txt";        //TODO: Add own path where stats should be stored
+            string path = pathS + uId + ".txt";
             if (File.Exists(path))
             {
                 onlineUsers.Add(uId);
@@ -267,7 +268,7 @@ namespace DiscordSpy
 
         private void UserLeave(ulong uId, String uName = "Unknown")
         {
-            string path = "" + uId + ".txt";        //TODO: Add own path where stats should be stored
+            string path = pathS + uId + ".txt";
             if (File.Exists(path))
             {
                 if (onlineUsers.Contains(uId))
