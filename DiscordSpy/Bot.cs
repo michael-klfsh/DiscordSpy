@@ -26,12 +26,13 @@ namespace DiscordSpy
         public Bot()
         {
             client = new DiscordSocketClient();
-            afkChannel = ulong.Parse(ConfigurationManager.AppSettings["afkChannel"]);
-            roleID = ulong.Parse(ConfigurationManager.AppSettings["role"]);
-            interval = double.Parse(ConfigurationManager.AppSettings["interval"]);
-            pathS = ConfigurationManager.AppSettings["pathS"];
-            pathD = ConfigurationManager.AppSettings["pathD"];
-            channelID = ulong.Parse(ConfigurationManager.AppSettings["channelId"]);
+            //Console.WriteLine(ConfigurationManager.AppSettings["afkChannel"]);
+            afkChannel = 500715863628972033;//ulong.Parse(ConfigurationManager.AppSettings["afkChannel"]);
+            roleID = 713433199899967529;//ulong.Parse(ConfigurationManager.AppSettings["role"]);
+            interval = 7.0;//double.Parse(ConfigurationManager.AppSettings["interval"]);
+            pathS = "/home/pi/Desktop/DiscordSpy/Stats";//ConfigurationManager.AppSettings["pathS"];
+            pathD = "/home/pi/Desktop/DiscordSpy/Date";//ConfigurationManager.AppSettings["pathD"];
+            channelID = 500714761227337751;//ulong.Parse(ConfigurationManager.AppSettings["channelId"]);
         }
 
         public async Task MainAsync()
@@ -39,7 +40,7 @@ namespace DiscordSpy
             try
             {
                 await Initialize();
-                string token = ConfigurationManager.AppSettings["token"];
+                string token = "Njc2MzkxMjg3MTQxOTU3NjMy.XsgOgA.BAaC0HrFwtz3RDrMUG6RXyd1cus";//ConfigurationManager.AppSettings["token"];
                 await client.LoginAsync(Discord.TokenType.Bot, token);
                 await client.StartAsync();
                 await Task.Delay(-1);
