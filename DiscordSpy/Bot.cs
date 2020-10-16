@@ -40,7 +40,7 @@ namespace DiscordSpy
             try
             {
                 await Initialize();
-                string token = "Njc2MzkxMjg3MTQxOTU3NjMy.XsgOgA.BAaC0HrFwtz3RDrMUG6RXyd1cus";//ConfigurationManager.AppSettings["token"];
+                string token = "";//ConfigurationManager.AppSettings["token"];
                 await client.LoginAsync(Discord.TokenType.Bot, token);
                 await client.StartAsync();
                 await Task.Delay(-1);
