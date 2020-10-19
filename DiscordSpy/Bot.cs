@@ -19,6 +19,7 @@ namespace DiscordSpy
         ulong afkChannel;
         ulong roleID;
         double interval;
+        ulong guildId;
 
         /**
          * Creates a new bot instance
@@ -32,16 +33,21 @@ namespace DiscordSpy
             pathS = ConfigurationManager.AppSettings["pathS"];
             pathD = ConfigurationManager.AppSettings["pathD"];
             channelID = ulong.Parse(ConfigurationManager.AppSettings["channelId"]);
+            guildId = ulong.Parse(ConfigurationManager.AppSettings["guildId"]);
+            onlineUsers = new List<ulong>();
         }
 
         public async Task MainAsync()
         {
             try
             {
+                Console.WriteLine("The Bot ist starting...\nPlease wait");
                 await Initialize();
                 string token = ConfigurationManager.AppSettings["token"];
                 await client.LoginAsync(Discord.TokenType.Bot, token);
                 await client.StartAsync();
+                Console.WriteLine("Ready!");
+                await CheckAtLogin();
                 await Task.Delay(-1);
             }
             catch(Exception e)      //TODO: Add TokenNotFoundException 
@@ -73,7 +79,7 @@ namespace DiscordSpy
             {
                 return;
             }
-            if (before.VoiceChannel == null && after.VoiceChannel != null && after.VoiceChannel.Id != afkChannel || before.VoiceChannel.Id == afkChannel && after.VoiceChannel != null && after.VoiceChannel.Id != afkChannel)
+            if (before.VoiceChannel == null && after.VoiceChannel != null && after.VoiceChannel.Id != afkChannel || before.VoiceChannel != null && before.VoiceChannel.Id == afkChannel && after.VoiceChannel != null && after.VoiceChannel.Id != afkChannel)
             {
                 UserJoin(user.Id);
             }
@@ -210,22 +216,25 @@ namespace DiscordSpy
                                 Console.WriteLine("Der User {message.Author.Username} wollte seine Zeit wissen, es ist aber ein Fehler aufgetreten.");
                             }
                         }
+                        else
+                        {
+                            await message.Author.SendMessageAsync("Es scheint so, als hättest du noch keine Statistiken auf dem Server.");
+                        }
                     }
                 }
                 catch(Exception e)
                 {
-
+                    Console.WriteLine("Error while response on message");
                 }
             }
         }
 
         public async Task CloseStats(Exception e)
         {
-            var voiceChannels = client.GetGuild(channelID).VoiceChannels;
+            var voiceChannels = client.GetGuild(guildId).VoiceChannels;
             foreach (var channel in voiceChannels)
             {
-                //Vllt ersetzen durch onlineUser List
-                var users = channel.Users; //Gibt das alle User aus dem Channel wieder oder alle die den sehen können??
+                var users = channel.Users;
                 if (users != null)
                 {
                     foreach (var user in users)
@@ -263,6 +272,23 @@ namespace DiscordSpy
                 String[] layout = { "TimeInVoice: 0 0", "MessagesSend: 0 0 0" };        //Layout of the statistic file
                 File.WriteAllLinesAsync(path, layout).Wait();
                 UserJoin(uId);
+            }
+        }
+
+        private async Task CheckAtLogin()
+        {
+            var voiceChannels = client.GetGuild(guildId).VoiceChannels;
+            foreach (var channel in voiceChannels)
+            {
+                var users = channel.Users;
+                if (users != null)
+                {
+                    foreach (var user in users)
+                    {
+                        onlineUsers.Add(user.Id);
+                        UserJoin(user.Id);
+                    }
+                }
             }
         }
 
