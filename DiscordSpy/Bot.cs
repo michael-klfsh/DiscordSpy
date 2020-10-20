@@ -47,7 +47,6 @@ namespace DiscordSpy
                 await client.LoginAsync(Discord.TokenType.Bot, token);
                 await client.StartAsync();
                 Console.WriteLine("Ready!");
-                await CheckAtLogin();
                 await Task.Delay(-1);
             }
             catch(Exception e)      //TODO: Add TokenNotFoundException 
@@ -61,6 +60,7 @@ namespace DiscordSpy
          */
         private async Task Initialize()
         {
+            client.Ready += CheckAtLogin;
             client.UserJoined += NewUserJoin;
             client.UserVoiceStateUpdated += UserMoves;
             client.GuildMemberUpdated += ManageRole;
@@ -277,6 +277,7 @@ namespace DiscordSpy
 
         private async Task CheckAtLogin()
         {
+            Console.WriteLine("Der Bot hat sich eingeloggt und arbeitet jetzt...");
             var voiceChannels = client.GetGuild(guildId).VoiceChannels;
             foreach (var channel in voiceChannels)
             {
