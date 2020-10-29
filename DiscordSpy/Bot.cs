@@ -145,6 +145,14 @@ namespace DiscordSpy
                         }
                     }
                 }
+                else
+                {
+                    Console.WriteLine($"Die Datumsdatei hat {file.Length} Zeilen!");
+                }
+            }
+            else
+            {
+                Console.WriteLine($"Kann den Pfad {pathD} nicht finden.");
             }
         }
 
