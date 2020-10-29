@@ -91,22 +91,27 @@ namespace DiscordSpy
 
         public async Task ManageRole(SocketGuildUser before, SocketGuildUser after)
         {
+            Console.WriteLine("Check 1");
             if (File.Exists(pathD))
             {
                 /*Check date*/
                 String[] file = File.ReadAllLines(pathD);
                 if (file.Length == 1)
                 {
+                    Console.WriteLine("Check 2");
                     if (DateTime.Compare(DateTime.Parse(file[0]).AddDays(interval), DateTime.Now) <= 0)
                     {
+                        Console.WriteLine("Check 3");
                         using (StreamWriter sw = new StreamWriter(pathD))
                         {
                             sw.WriteLine(DateTime.Now);
+                            Console.WriteLine("Check 4");
                         }
                         /*Evaluate user with longest time on guild*/
                         int longestTime = -1;
                         String maxUserPath = "";        //""+pathS + "000";
                         String[] files = Directory.GetFiles(pathS);
+                        Console.WriteLine("Check 5");
                         foreach (String user in files)
                         {
                             String time;
@@ -116,10 +121,12 @@ namespace DiscordSpy
                                 longestTime = int.Parse(time);
                                 maxUserPath = user;
                             }
+                            Console.WriteLine("Check 6");
                         }
                         /*Remove role of old member and add role to new one*/
                         try
                         {
+                            Console.WriteLine("Check 7");
                             var guild = before.Guild;
                             var winningUser = guild.GetUser(ulong.Parse(maxUserPath.Split("/")[7].Split(".")[0]));
                             var role = guild.GetRole(roleID);
