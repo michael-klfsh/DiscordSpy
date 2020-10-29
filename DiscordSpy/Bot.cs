@@ -131,11 +131,14 @@ namespace DiscordSpy
                             var winningUser = guild.GetUser(ulong.Parse(maxUserPath.Split("/")[6].Split(".")[0]));
                             var role = guild.GetRole(roleID);
                             var oldMembers = role.Members;
+                            Console.WriteLine("Test");
                             foreach (var member in oldMembers)       //Alle mit der VIP Rolle wird diese entzogen
                             {
+                                Console.WriteLine("foreach");
                                 Console.WriteLine($"Loesche die VIP Rolle von: {member}");
                                 await member.RemoveRoleAsync(role, RequestOptions.Default);     //TODO: Check if await needed
                             }
+                            Console.WriteLine(winningUser.Username);
                             await (winningUser as IGuildUser).AddRoleAsync(role);       //Der neue bekommt die VIP Rolle.
                             Console.WriteLine($"Der User {winningUser} hat mit {longestTime} Sekunden gewonnen.");
                             await (client.GetChannel(channelID) as IMessageChannel).SendMessageAsync($"{winningUser} war mit {longestTime / 3600}h am längsten auf dem Server und bekommt für diese Woche die VIP Rolle");
