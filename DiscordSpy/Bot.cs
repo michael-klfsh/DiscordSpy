@@ -3,7 +3,6 @@ using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using System.Configuration;
 
@@ -19,6 +18,7 @@ namespace DiscordSpy
         ulong afkChannel;
         ulong roleID;
         double interval;
+        ulong guildId;
 
         /**
          * Creates a new bot instance
@@ -32,19 +32,23 @@ namespace DiscordSpy
             pathS = ConfigurationManager.AppSettings["pathS"];
             pathD = ConfigurationManager.AppSettings["pathD"];
             channelID = ulong.Parse(ConfigurationManager.AppSettings["channelId"]);
+            guildId = ulong.Parse(ConfigurationManager.AppSettings["guildId"]);
+            onlineUsers = new List<ulong>();
         }
 
         public async Task MainAsync()
         {
             try
             {
+                Console.WriteLine("The Bot ist starting...\nPlease wait");
                 await Initialize();
                 string token = ConfigurationManager.AppSettings["token"];
                 await client.LoginAsync(Discord.TokenType.Bot, token);
                 await client.StartAsync();
+                Console.WriteLine("Ready!");
                 await Task.Delay(-1);
             }
-            catch(Exception e)      //TODO: Add TokenNotFoundException 
+            catch(Exception e)
             {
                 Console.WriteLine("Es ist ein Fehler aufgetreten! Haben Sie ein Token hinterlegt?");
             }
@@ -55,6 +59,7 @@ namespace DiscordSpy
          */
         private async Task Initialize()
         {
+            client.Ready += CheckAtLogin;
             client.UserJoined += NewUserJoin;
             client.UserVoiceStateUpdated += UserMoves;
             client.GuildMemberUpdated += ManageRole;
@@ -73,7 +78,7 @@ namespace DiscordSpy
             {
                 return;
             }
-            if (before.VoiceChannel == null && after.VoiceChannel != null && after.VoiceChannel.Id != afkChannel || before.VoiceChannel.Id == afkChannel && after.VoiceChannel != null && after.VoiceChannel.Id != afkChannel)
+            if (before.VoiceChannel == null && after.VoiceChannel != null && after.VoiceChannel.Id != afkChannel || before.VoiceChannel != null && before.VoiceChannel.Id == afkChannel && after.VoiceChannel != null && after.VoiceChannel.Id != afkChannel)
             {
                 UserJoin(user.Id);
             }
@@ -99,7 +104,7 @@ namespace DiscordSpy
                         }
                         /*Evaluate user with longest time on guild*/
                         int longestTime = -1;
-                        String maxUserPath = "";        //""+pathS + "000";
+                        String maxUserPath = "";
                         String[] files = Directory.GetFiles(pathS);
                         foreach (String user in files)
                         {
@@ -115,7 +120,7 @@ namespace DiscordSpy
                         try
                         {
                             var guild = before.Guild;
-                            var winningUser = guild.GetUser(ulong.Parse(maxUserPath.Split("/")[7].Split(".")[0]));
+                            var winningUser = guild.GetUser(ulong.Parse(maxUserPath.Split("\\")[7].Split(".")[0]));
                             var role = guild.GetRole(roleID);
                             var oldMembers = role.Members;
                             foreach (var member in oldMembers)       //Alle mit der VIP Rolle wird diese entzogen
@@ -139,6 +144,14 @@ namespace DiscordSpy
                         }
                     }
                 }
+                else
+                {
+                    Console.WriteLine($"Die Datumsdatei hat {file.Length} Zeilen!");
+                }
+            }
+            else
+            {
+                Console.WriteLine($"Kann den Pfad {pathD} nicht finden.");
             }
         }
 
@@ -210,27 +223,29 @@ namespace DiscordSpy
                                 Console.WriteLine("Der User {message.Author.Username} wollte seine Zeit wissen, es ist aber ein Fehler aufgetreten.");
                             }
                         }
+                        else
+                        {
+                            await message.Author.SendMessageAsync("Es scheint so, als hättest du noch keine Statistiken auf dem Server.");
+                        }
                     }
                 }
                 catch(Exception e)
                 {
-
+                    Console.WriteLine("Error while response on message");
                 }
             }
         }
 
         public async Task CloseStats(Exception e)
         {
-            var voiceChannels = client.GetGuild(channelID).VoiceChannels;
+            var voiceChannels = client.GetGuild(guildId).VoiceChannels;
             foreach (var channel in voiceChannels)
             {
-                //Vllt ersetzen durch onlineUser List
-                var users = channel.Users; //Gibt das alle User aus dem Channel wieder oder alle die den sehen können??
+                var users = channel.Users;
                 if (users != null)
                 {
                     foreach (var user in users)
                     {
-                        onlineUsers.Remove(user.Id);
                         UserLeave(user.Id, user.Username);
                     }
                 }
@@ -263,6 +278,23 @@ namespace DiscordSpy
                 String[] layout = { "TimeInVoice: 0 0", "MessagesSend: 0 0 0" };        //Layout of the statistic file
                 File.WriteAllLinesAsync(path, layout).Wait();
                 UserJoin(uId);
+            }
+        }
+
+        private async Task CheckAtLogin()
+        {
+            Console.WriteLine("Der Bot hat sich eingeloggt und arbeitet jetzt...");
+            var voiceChannels = client.GetGuild(guildId).VoiceChannels;
+            foreach (var channel in voiceChannels)
+            {
+                var users = channel.Users;
+                if (users != null)
+                {
+                    foreach (var user in users)
+                    {
+                        UserJoin(user.Id);
+                    }
+                }
             }
         }
 

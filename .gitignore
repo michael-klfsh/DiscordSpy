@@ -341,3 +341,7 @@ healthchecksdb
 
 #app.config
 app.config
+
+#IndividualData
+Datum.txt
+/Stats
