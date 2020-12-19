@@ -63,7 +63,7 @@ namespace DiscordSpy
             client.Ready += CheckAtLogin;
             client.UserJoined += NewUserJoin;
             client.UserVoiceStateUpdated += UserMoves;
-            client.GuildMemberUpdated += ManageRole;
+            client.GuildMemberUpdated += ManageRole;        //Looks like the event isnt fired on status change. Maby there is an other event handeling this 
             client.MessageReceived += RespondOnMessage;
             client.Disconnected += CloseStats;
         }
@@ -91,27 +91,22 @@ namespace DiscordSpy
 
         public async Task ManageRole(SocketGuildUser before, SocketGuildUser after)
         {
-            Console.WriteLine("Check 1");
             if (File.Exists(pathD))
             {
                 /*Check date*/
                 String[] file = File.ReadAllLines(pathD);
                 if (file.Length == 1)
                 {
-                    Console.WriteLine("Check 2");
                     if (DateTime.Compare(DateTime.Parse(file[0]).AddDays(interval), DateTime.Now) <= 0)
                     {
-                        Console.WriteLine("Check 3");
                         using (StreamWriter sw = new StreamWriter(pathD))
                         {
                             sw.WriteLine(DateTime.Now);
-                            Console.WriteLine("Check 4");
                         }
                         /*Evaluate user with longest time on guild*/
                         int longestTime = -1;
                         String maxUserPath = "";        //""+pathS + "000";
                         String[] files = Directory.GetFiles(pathS);
-                        Console.WriteLine("Check 5");
                         foreach (String user in files)
                         {
                             String time;
@@ -121,24 +116,19 @@ namespace DiscordSpy
                                 longestTime = int.Parse(time);
                                 maxUserPath = user;
                             }
-                            Console.WriteLine("Check 6");
                         }
                         /*Remove role of old member and add role to new one*/
                         try
                         {
-                            Console.WriteLine("Check 7");
                             var guild = before.Guild;
                             var winningUser = guild.GetUser(ulong.Parse(maxUserPath.Split("\\")[7].Split(".")[0]));
                             var role = guild.GetRole(roleID);
                             var oldMembers = role.Members;
-                            Console.WriteLine("Test");
                             foreach (var member in oldMembers)       //Alle mit der VIP Rolle wird diese entzogen
                             {
-                                Console.WriteLine("foreach");
                                 Console.WriteLine($"Loesche die VIP Rolle von: {member}");
                                 await member.RemoveRoleAsync(role, RequestOptions.Default);     //TODO: Check if await needed
                             }
-                            Console.WriteLine(winningUser.Username);
                             await (winningUser as IGuildUser).AddRoleAsync(role);       //Der neue bekommt die VIP Rolle.
                             Console.WriteLine($"Der User {winningUser} hat mit {longestTime} Sekunden gewonnen.");
                             await (client.GetChannel(channelID) as IMessageChannel).SendMessageAsync($"{winningUser} war mit {longestTime / 3600}h am längsten auf dem Server und bekommt für diese Woche die VIP Rolle");
