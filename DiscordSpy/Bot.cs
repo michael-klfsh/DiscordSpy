@@ -247,7 +247,6 @@ namespace DiscordSpy
                 {
                     foreach (var user in users)
                     {
-                        onlineUsers.Remove(user.Id);
                         UserLeave(user.Id, user.Username);
                     }
                 }
