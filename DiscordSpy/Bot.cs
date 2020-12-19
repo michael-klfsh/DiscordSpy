@@ -63,7 +63,7 @@ namespace DiscordSpy
             client.Ready += CheckAtLogin;
             client.UserJoined += NewUserJoin;
             client.UserVoiceStateUpdated += UserMoves;
-            client.GuildMemberUpdated += ManageRole;        //Looks like the event isnt fired on status change. Maby there is an other event handeling this 
+            client.GuildMemberUpdated += ManageRole;
             client.MessageReceived += RespondOnMessage;
             client.Disconnected += CloseStats;
         }
