@@ -63,7 +63,7 @@ namespace DiscordSpy
             client.Ready += CheckAtLogin;
             client.UserJoined += NewUserJoin;
             client.UserVoiceStateUpdated += UserMoves;
-            client.GuildMemberUpdated += ManageRole;
+            client.GuildMemberUpdated += ManageRole;        //Looks like the event isnt fired on status change. Maby there is an other event handeling this 
             client.MessageReceived += RespondOnMessage;
             client.Disconnected += CloseStats;
         }
@@ -121,7 +121,7 @@ namespace DiscordSpy
                         try
                         {
                             var guild = before.Guild;
-                            var winningUser = guild.GetUser(ulong.Parse(maxUserPath.Split("/")[6].Split(".")[0]));
+                            var winningUser = guild.GetUser(ulong.Parse(maxUserPath.Split("\\")[7].Split(".")[0]));
                             var role = guild.GetRole(roleID);
                             var oldMembers = role.Members;
                             foreach (var member in oldMembers)       //Alle mit der VIP Rolle wird diese entzogen
@@ -294,7 +294,6 @@ namespace DiscordSpy
                 {
                     foreach (var user in users)
                     {
-                        onlineUsers.Add(user.Id);
                         UserJoin(user.Id);
                     }
                 }
