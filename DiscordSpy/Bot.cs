@@ -3,7 +3,6 @@ using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using System.Configuration;
 
@@ -49,7 +48,7 @@ namespace DiscordSpy
                 Console.WriteLine("Ready!");
                 await Task.Delay(-1);
             }
-            catch(Exception e)      //TODO: Add TokenNotFoundException 
+            catch(Exception e)
             {
                 Console.WriteLine("Es ist ein Fehler aufgetreten! Haben Sie ein Token hinterlegt?");
             }
@@ -63,7 +62,7 @@ namespace DiscordSpy
             client.Ready += CheckAtLogin;
             client.UserJoined += NewUserJoin;
             client.UserVoiceStateUpdated += UserMoves;
-            client.GuildMemberUpdated += ManageRole;        //Looks like the event isnt fired on status change. Maby there is an other event handeling this 
+            client.GuildMemberUpdated += ManageRole;
             client.MessageReceived += RespondOnMessage;
             client.Disconnected += CloseStats;
         }
@@ -105,7 +104,7 @@ namespace DiscordSpy
                         }
                         /*Evaluate user with longest time on guild*/
                         int longestTime = -1;
-                        String maxUserPath = "";        //""+pathS + "000";
+                        String maxUserPath = "";
                         String[] files = Directory.GetFiles(pathS);
                         foreach (String user in files)
                         {
