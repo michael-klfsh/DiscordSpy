@@ -128,7 +128,7 @@ namespace DiscordSpy
                         {
                             Console.WriteLine("Check 7");
                             var guild = before.Guild;
-                            var winningUser = guild.GetUser(ulong.Parse(maxUserPath.Split("/")[6].Split(".")[0]));
+                            var winningUser = guild.GetUser(ulong.Parse(maxUserPath.Split("\\")[7].Split(".")[0]));
                             var role = guild.GetRole(roleID);
                             var oldMembers = role.Members;
                             Console.WriteLine("Test");
@@ -304,7 +304,6 @@ namespace DiscordSpy
                 {
                     foreach (var user in users)
                     {
-                        onlineUsers.Add(user.Id);
                         UserJoin(user.Id);
                     }
                 }
