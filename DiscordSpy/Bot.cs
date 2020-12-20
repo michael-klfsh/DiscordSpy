@@ -135,8 +135,9 @@ namespace DiscordSpy
                             foreach (String delFile in files)
                             {
 
-                                File.Delete(delFile);      //Jede Datei wird gelöscht
+                                File.Delete(delFile);
                             }
+                            await CheckForOnlineUser();       //Online User werden wieder hinzugefügt
                         }
                         catch (Exception e)
                         {
@@ -284,6 +285,11 @@ namespace DiscordSpy
         private async Task CheckAtLogin()
         {
             Console.WriteLine("Der Bot hat sich eingeloggt und arbeitet jetzt...");
+            await CheckForOnlineUser();
+        }
+
+        private async Task CheckForOnlineUser()
+        {
             var voiceChannels = client.GetGuild(guildId).VoiceChannels;
             foreach (var channel in voiceChannels)
             {
