@@ -12,6 +12,7 @@ namespace DiscordSpy
     {
         private DiscordSocketClient client;
         private List<ulong> onlineUsers;
+        private List<ulong> blacklist;
         string pathS;
         string pathD;
         ulong channelID;
@@ -34,6 +35,19 @@ namespace DiscordSpy
             channelID = ulong.Parse(ConfigurationManager.AppSettings["channelId"]);
             guildId = ulong.Parse(ConfigurationManager.AppSettings["guildId"]);
             onlineUsers = new List<ulong>();
+            blacklist = new List<ulong>();
+            string[] blacklistStr = ConfigurationManager.AppSettings["blacklist"].Split(';');
+            foreach(var user in blacklistStr)
+            {
+                try
+                {
+                    blacklist.Add(ulong.Parse(user));
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine("Es ist ein Fehler beim Füllen der Blackliste aufgetreten.");
+                }
+            }
         }
 
         public async Task MainAsync()
@@ -108,6 +122,10 @@ namespace DiscordSpy
                         String[] files = Directory.GetFiles(pathS);
                         foreach (String user in files)
                         {
+                            if(isOnBlacklist(ulong.Parse(user.Split("\\")[7].Split(".")[0])))
+                            {
+                                continue;
+                            }
                             String time;
                             time = File.ReadAllLines(user)[0].Split(" ")[2];       //Stores the total time of the user
                             if (int.Parse(time) > longestTime)          //unlikely: two have same time -> first win
@@ -120,7 +138,6 @@ namespace DiscordSpy
                         try
                         {
                             var guild = before.Guild;
-                            var winningUser = guild.GetUser(ulong.Parse(maxUserPath.Split("\\")[7].Split(".")[0]));
                             var role = guild.GetRole(roleID);
                             var oldMembers = role.Members;
                             foreach (var member in oldMembers)       //Alle mit der VIP Rolle wird diese entzogen
@@ -128,13 +145,16 @@ namespace DiscordSpy
                                 Console.WriteLine($"Loesche die VIP Rolle von: {member}");
                                 await member.RemoveRoleAsync(role, RequestOptions.Default);     //TODO: Check if await needed
                             }
-                            await (winningUser as IGuildUser).AddRoleAsync(role);       //Der neue bekommt die VIP Rolle.
-                            Console.WriteLine($"Der User {winningUser} hat mit {longestTime} Sekunden gewonnen.");
-                            await (client.GetChannel(channelID) as IMessageChannel).SendMessageAsync($"{winningUser} war mit {longestTime / 3600}h am längsten auf dem Server und bekommt für diese Woche die VIP Rolle");
+                            if (!maxUserPath.Equals(""))
+                            {
+                                var winningUser = guild.GetUser(ulong.Parse(maxUserPath.Split("\\")[7].Split(".")[0]));
+                                await (winningUser as IGuildUser).AddRoleAsync(role);       //Der neue bekommt die VIP Rolle.
+                                Console.WriteLine($"Der User {winningUser} hat mit {longestTime} Sekunden gewonnen.");
+                                await (client.GetChannel(channelID) as IMessageChannel).SendMessageAsync($"{winningUser} war mit {longestTime / 3600}h am längsten auf dem Server und bekommt für diese Woche die VIP Rolle");
+                            }
                             /*Delete all files*/
                             foreach (String delFile in files)
                             {
-
                                 File.Delete(delFile);
                             }
                             await CheckForOnlineUser();       //Online User werden wieder hinzugefügt
@@ -286,6 +306,11 @@ namespace DiscordSpy
         {
             Console.WriteLine("Der Bot hat sich eingeloggt und arbeitet jetzt...");
             await CheckForOnlineUser();
+        }
+
+        private bool isOnBlacklist(ulong userId)
+        {
+            return blacklist.Contains(userId);
         }
 
         private async Task CheckForOnlineUser()
