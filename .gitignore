@@ -340,8 +340,10 @@ ASALocalRun/
 healthchecksdb
 
 #app.config
+App.config
 app.config
 
 #IndividualData
 Datum.txt
 /Stats
+.save
